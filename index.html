@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>WebRTC y Orientación del Dispositivo</title>
+        <!--Estilos generales de la página-->
+    <style>       
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            padding: 50px;
+            transition: background-color 0.5s;
+        }
+        .landscape {
+            background-color: #d0f0c0;
+        }
+        .portrait {
+            background-color: #f8a8f0;
+        }
+        video {
+            margin-top: 20px;
+            max-width: 90%;
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebRTC + Detección de Orientación</h1>
+    <!-- solo comentarios de lo que se esta viendo en página -->
+    <h2>Estado de Cámara y Micrófono</h2>
+    <p id="mensaje"></p>
+
+    <h2>Orientación del Dispositivo</h2>
+    <p id="orientacion">Detectando orientación...</p>
+
+    <script>
+        // WebRTC: Acceso a cámara y micrófono 
+        const mensaje = document.getElementById("mensaje");
+
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            mensaje.textContent = "✅ Tu navegador soporta WebRTC. Solicitando acceso a cámara y micrófono..."; // si esta soportado, aparecerá
+
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true }) // Este es para dar acceso a la cámara y microfono
+                .then((stream) => {
+                    mensaje.textContent = "✅ Acceso concedido a cámara y micrófono.";
+
+                    const video = document.createElement('video'); //mostrara el video
+                    video.srcObject = stream;
+                    video.autoplay = true; // se autoejecutara el video
+                    video.muted = true; // para evitar eco al reproducir
+                    document.body.appendChild(video); // podra estar en pequeño y ponemos moverlo
+                })
+                .catch((error) => {
+                    mensaje.textContent = "❌ Acceso denegado o error: " + error.message;
+                }); // si no se da acceso
+
+        } else {
+            mensaje.textContent = "❌ Tu navegador no soporta WebRTC.";
+        } // si no lo soporta el navegador
+
+        // Detección de orientación del dispositivo, cuando la pagina este en horizontal o vertical, cambiara de color  
+        const texto = document.getElementById("orientacion");
+
+        function detectarOrientacion() { //función para dar vida a la posición de la página
+            if (window.matchMedia("(orientation: portrait)").matches) {
+                document.body.className = "portrait"; //para qeu el sistema detecte vertical
+                texto.textContent = "📱↕ Estás en orientación 'vertical' ↕️";
+            } else if (window.matchMedia("(orientation: landscape)").matches) {
+                document.body.className = "landscape"; //modo paisaje para horizontal
+                texto.textContent = "📱 Estás en orientación 'horizontal'↔️";
+            } else {
+                texto.textContent = "No se pudo detectar la orientación."; // si se da el caso
+            }
+        }
+
+        // Ejecutar al cargar y cuando cambie la orientación
+        detectarOrientacion();
+        window.addEventListener("orientationchange", detectarOrientacion);
+        window.addEventListener("resize", detectarOrientacion);
+    </script>
+</body>
+</html>
